@@ -99,7 +99,7 @@ func updateMysql(id int, price string) {
 		fmt.Println("updateMysql prepare", err)
 	}
 
-	_, err = stmt.Exec("2016-03-23", price, "")
+	_, err = stmt.Exec("2016-03-25", price, "")
 	if err != nil {
 		fmt.Println("updateMysql execute", err)
 	}
