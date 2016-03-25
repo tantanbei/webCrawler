@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql_original"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Cars struct {
