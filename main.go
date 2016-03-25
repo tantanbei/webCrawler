@@ -60,7 +60,7 @@ func main() {
 }
 
 func DelectTables(id int) {
-	db, err := sql.Open("mysql", "root:lbx@tcp(127.0.0.1:3306)/chexiang")
+	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
 	defer db.Close()
 	if err != nil {
 		fmt.Println("updateMysql open", err)
@@ -73,7 +73,7 @@ func DelectTables(id int) {
 }
 
 func CreatTables(id int) {
-	db, err := sql.Open("mysql", "root:lbx@tcp(127.0.0.1:3306)/chexiang")
+	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
 	defer db.Close()
 	if err != nil {
 		fmt.Println("updateMysql open", err)
@@ -87,7 +87,7 @@ func CreatTables(id int) {
 }
 
 func updateMysql(id int, price string) {
-	db, err := sql.Open("mysql", "root:lbx@tcp(127.0.0.1:3306)/chexiang")
+	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
 	defer db.Close()
 	if err != nil {
 		fmt.Println("updateMysql open", err)
