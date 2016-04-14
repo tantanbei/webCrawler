@@ -6,33 +6,28 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"sync"
+	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql_original"
 )
 
-type Cars struct {
-	carsMap map[string]string
-	sync.Mutex
-}
-
-func (self *Cars) init() {
-	self.carsMap = make(map[string]string)
-}
-
-func (self *Cars) UpdateMap(name string, price string) {
-	self.Lock()
-	self.carsMap[name] = price
-	self.Unlock()
-}
+var db sql.DB
+var timeNow string
 
 func main() {
-	cars := &Cars{}
-	cars.init()
-	//UrlArray := make([]string, 0)
+
+	timeNow = time.Now().Format("2006-01-02")
+	fmt.Println(timeNow)
+
+	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	for i := 0; i < 7379; i++ {
-		//		DelectTables(i)
-		CreatTables(i)
+		//		DelectTables(db,i)
+		CreatTables(db, i)
 
 		url := fmt.Sprint("http://car.chexiang.com/product/", i, ".htm")
 		resp, err := http.Get(url)
@@ -47,51 +42,36 @@ func main() {
 			fmt.Println("read resp body err:", err)
 			return
 		}
+
 		name, price, err := ParseWebBody(bs_body)
 		if err != nil {
 			fmt.Println("ParseWebBody err:", err)
 			return
 		}
 
-		updateMysql(i, price)
-		fmt.Println(i, name, price)
+		remark := ""
+		updateMysql(db, i, price, remark)
+		fmt.Println(i, name, price, remark)
 	}
-
 }
 
-func DelectTables(id int) {
-	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
-	defer db.Close()
-	if err != nil {
-		fmt.Println("updateMysql open", err)
-	}
+func DelectTables(db *sql.DB, id int) {
 
-	_, err = db.Exec(fmt.Sprint("drop table if exists id_", id, ";"))
+	_, err := db.Exec(fmt.Sprint("drop table if exists id_", id, ";"))
 	if err != nil {
 		fmt.Println("updateMysql delect", err)
 	}
 }
 
-func CreatTables(id int) {
-	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
-	defer db.Close()
-	if err != nil {
-		fmt.Println("updateMysql open", err)
-	}
+func CreatTables(db *sql.DB, id int) {
 
-	_, err = db.Exec(fmt.Sprint("create table if not exists id_", id, "(time date primary KEY, price char(15),remark varchar(100));"))
+	_, err := db.Exec(fmt.Sprint("create table if not exists id_", id, "(time date primary KEY, price char(15),remark varchar(100));"))
 	if err != nil {
 		fmt.Println("updateMysql Create", err)
 	}
-
 }
 
-func updateMysql(id int, price string) {
-	db, err := sql.Open("mysql", "root:liuliu@tcp(127.0.0.1:3306)/chexiang")
-	defer db.Close()
-	if err != nil {
-		fmt.Println("updateMysql open", err)
-	}
+func updateMysql(db *sql.DB, id int, price string, remark string) {
 
 	stmt, err := db.Prepare(fmt.Sprint("INSERT id_", id, " SET time=?,price=?,remark=?"))
 	defer stmt.Close()
@@ -99,31 +79,10 @@ func updateMysql(id int, price string) {
 		fmt.Println("updateMysql prepare", err)
 	}
 
-	_, err = stmt.Exec("2016-03-25", price, "")
+	_, err = stmt.Exec(timeNow, price, remark)
 	if err != nil {
 		fmt.Println("updateMysql execute", err)
 	}
-}
-
-func (self *Cars) run(url string) {
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println("get url err:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	bs_body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("read resp body err:", err)
-		return
-	}
-	name, price, err := ParseWebBody(bs_body)
-	if err != nil {
-		fmt.Println("ParseWebBody err:", err)
-		return
-	}
-	self.UpdateMap(name, price)
 }
 
 func ParseWebBody(body []byte) (string, string, error) {
