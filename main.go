@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"webCrawler/crawler"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -26,7 +28,7 @@ func main() {
 
 	for i := 0; i < 7379; i++ {
 		//		DelectTables(db,i)
-		CreatTables(db, i)
+		crawler.CreatTables(db, i)
 
 		url := fmt.Sprint("http://car.chexiang.com/product/", i, ".htm")
 		resp, err := http.Get(url)
@@ -42,14 +44,14 @@ func main() {
 			return
 		}
 
-		name, price, err := ParseWebBody(bs_body)
+		name, price, err := crawler.ParseWebBody(bs_body)
 		if err != nil {
 			fmt.Println("ParseWebBody err:", err)
 			return
 		}
 
 		remark := ""
-		updateMysql(db, i, price, remark)
+		crawler.UpdateMysql(db, i, timeNow, price, remark)
 		fmt.Println(i, name, price, remark)
 	}
 }

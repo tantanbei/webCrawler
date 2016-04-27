@@ -1,4 +1,4 @@
-package main
+package crawler
 
 import (
 	"database/sql"
@@ -21,7 +21,7 @@ func CreatTables(db *sql.DB, id int) {
 	}
 }
 
-func updateMysql(db *sql.DB, id int, price string, remark string) {
+func UpdateMysql(db *sql.DB, id int, timeNow string, price string, remark string) {
 
 	stmt, err := db.Prepare(fmt.Sprint("INSERT id_", id, " SET time=?,price=?,remark=?"))
 	defer stmt.Close()
