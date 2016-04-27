@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql_original"
@@ -53,84 +52,4 @@ func main() {
 		updateMysql(db, i, price, remark)
 		fmt.Println(i, name, price, remark)
 	}
-}
-
-func DelectTables(db *sql.DB, id int) {
-
-	_, err := db.Exec(fmt.Sprint("drop table if exists id_", id, ";"))
-	if err != nil {
-		fmt.Println("updateMysql delect", err)
-	}
-}
-
-func CreatTables(db *sql.DB, id int) {
-
-	_, err := db.Exec(fmt.Sprint("create table if not exists id_", id, "(time date primary KEY, price char(15),remark varchar(100));"))
-	if err != nil {
-		fmt.Println("updateMysql Create", err)
-	}
-}
-
-func updateMysql(db *sql.DB, id int, price string, remark string) {
-
-	stmt, err := db.Prepare(fmt.Sprint("INSERT id_", id, " SET time=?,price=?,remark=?"))
-	defer stmt.Close()
-	if err != nil {
-		fmt.Println("updateMysql prepare", err)
-	}
-
-	_, err = stmt.Exec(timeNow, price, remark)
-	if err != nil {
-		fmt.Println("updateMysql execute", err)
-	}
-}
-
-//create the all name of cars on chexiang, and support chinese
-func CreatNameTable(db *sql.DB) {
-	_, err := db.Exec(fmt.Sprint("create table if not exists chexiangCarName(id int primary KEY not null, name varchar(100) not null)ENGINE=InnoDB DEFAULT CHARSET=utf8;"))
-	if err != nil {
-		fmt.Println("chexiangCarName Create", err)
-	}
-}
-
-//add the chexiang car name into table
-func updateNameTable(db *sql.DB, id int, name string) {
-	stmt, err := db.Prepare(fmt.Sprint("INSERT chexiangCarName SET id=?, name=?"))
-	defer stmt.Close()
-	if err != nil {
-		fmt.Println("updateMysql prepare", err)
-	}
-
-	_, err = stmt.Exec(id, name)
-	if err != nil {
-		fmt.Println("updateMysql execute", err)
-	}
-}
-
-//return the car name and price
-func ParseWebBody(body []byte) (string, string, error) {
-	reg, err := regexp.Compile("car-details.*\n.*<h1>(.*)</h1>")
-	if err != nil {
-		fmt.Println("Compile err:", err)
-		return "", "", err
-	}
-	results := reg.FindSubmatch(body)
-	if len(results) < 2 {
-		return "", "", err
-	}
-	//fmt.Println(string(results[1]))
-	name := string(results[1])
-
-	reg, err = regexp.Compile("<strong>&yen;(.*)</strong>")
-	if err != nil {
-		fmt.Println("Compile err:", err)
-		return "", "", err
-	}
-	results = reg.FindSubmatch(body)
-	if len(results) < 2 {
-		return "", "", err
-	}
-	price := string(results[1])
-
-	return name, price, nil
 }
