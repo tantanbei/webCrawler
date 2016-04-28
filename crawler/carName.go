@@ -14,7 +14,7 @@ func CreatNameTable(db *sql.DB) {
 }
 
 //add the chexiang car name into table
-func updateNameTable(db *sql.DB, id int, name string) {
+func UpdateNameTable(db *sql.DB, id int, name string) {
 	stmt, err := db.Prepare(fmt.Sprint("INSERT chexiangCarName SET id=?, name=?"))
 	defer stmt.Close()
 	if err != nil {
